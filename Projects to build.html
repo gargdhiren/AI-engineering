@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build-First Project List — ML & AI Engineering</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e2e2e8;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f0f0f5;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #6b6b80;
+    margin-bottom: 40px;
+  }
+
+  .phase {
+    margin-bottom: 32px;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .phase-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .phase-desc {
+    font-size: 13px;
+    color: #6b6b80;
+  }
+
+  .project {
+    border: 1px solid #1a1a28;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    background: #101018;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .project:hover {
+    border-color: #2a2a3a;
+  }
+
+  .project-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    color: #e2e2e8;
+    font-family: inherit;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .project-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .hard-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .arrow {
+    font-size: 16px;
+    color: #444;
+    transition: transform 0.15s;
+  }
+
+  .project.open .arrow {
+    transform: rotate(90deg);
+  }
+
+  .project-body {
+    display: none;
+    padding: 0 16px 16px 36px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .project.open .project-body {
+    display: block;
+  }
+
+  .project-what {
+    color: #b0b0c0;
+    margin-bottom: 10px;
+  }
+
+  .project-learns {
+    color: #6b6b80;
+  }
+
+  .project-learns strong {
+    color: #8888a0;
+    font-weight: 600;
+  }
+
+  .footer {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 10px;
+    background: #101018;
+    border: 1px solid #1a1a28;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #6b6b80;
+  }
+
+  .footer strong {
+    color: #c0c0d0;
+  }
+
+  .progress-bar {
+    margin-bottom: 36px;
+    padding: 16px;
+    border-radius: 10px;
+    background: #101018;
+    border: 1px solid #1a1a28;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6b6b80;
+    margin-bottom: 8px;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: #1a1a28;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #0d9488);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.5s;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 24px 14px; }
+    h1 { font-size: 22px; }
+    .project-btn { padding: 11px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Build-First Project List</h1>
+  <p class="subtitle">25 projects · learn by building · click to expand</p>
+
+  <div class="progress-bar">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="progress-text">0 / 25 completed</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <div id="phases"></div>
+
+  <div class="footer">
+    <strong>How to use this:</strong> Go top to bottom. Skip what's too easy. When you get stuck on a project, that's when you learn the theory. Google it, ask Claude, read the docs — then get back to building. The "HARD" tag means expect to struggle. That's the point.
+  </div>
+</div>
+
+<script>
+const projects = [
+  {
+    phase: "Warm Up",
+    color: "#6366f1",
+    desc: "You probably know some of this. Blitz through in 1–2 weeks.",
+    items: [
+      { name: "Data Explorer Tool", what: "A reusable explore(df) function that takes any DataFrame, auto-detects column types, shows stats, distributions, correlations, and generates visual charts.", learns: "Python, pandas, matplotlib, NumPy, data analysis", hard: false },
+      { name: "Linear Regression from Scratch", what: "Predict house prices using only NumPy — implement gradient descent, cost function, feature scaling, R² score. No scikit-learn allowed.", learns: "NumPy, linear algebra, calculus (gradients), optimization basics", hard: false },
+    ],
+  },
+  {
+    phase: "Classical ML",
+    color: "#8b5cf6",
+    desc: "Build intuition for how models learn. 2–3 weeks.",
+    items: [
+      { name: "Spam Detector Pipeline", what: "End-to-end: load raw SMS data → clean text → TF-IDF → train Naive Bayes + Logistic Regression + Random Forest → compare all three → save best model → predict on new input.", learns: "Text preprocessing, feature engineering, model evaluation, precision/recall, scikit-learn, model serialization", hard: false },
+      { name: "Fraud Detection System", what: "Handle heavily imbalanced dataset (credit card fraud). Deal with class imbalance (SMOTE, class weights), feature selection, cross-validation, ROC curves, threshold tuning.", learns: "Imbalanced data, advanced evaluation, feature selection, real-world messiness", hard: true },
+      { name: "Recommendation Engine", what: "Build a movie recommender — collaborative filtering from scratch using matrix factorization (NumPy), then content-based with TF-IDF, then a hybrid.", learns: "Matrix factorization, similarity metrics, cold start problem, system design thinking", hard: true },
+    ],
+  },
+  {
+    phase: "Deep Learning Core",
+    color: "#dc2626",
+    desc: "This is where it gets real. 4–6 weeks.",
+    items: [
+      { name: "Neural Net from Scratch", what: "Build a 3-layer neural network in pure NumPy. Forward pass, backprop, SGD, ReLU, softmax. Train on MNIST and hit >95% accuracy.", learns: "Backpropagation, chain rule, activation functions, weight initialization, how neural nets actually work", hard: true },
+      { name: "Image Classifier (CNN)", what: "Build a CNN in PyTorch for CIFAR-10. Then use transfer learning (ResNet-18) on a custom dataset you collect yourself.", learns: "PyTorch, CNNs, convolutions, pooling, transfer learning, data augmentation, DataLoaders, training loops", hard: false },
+      { name: "Text Generator (LSTM)", what: "Train a character-level LSTM on song lyrics or poetry. Generate new text. Then try word-level. Compare quality.", learns: "RNNs, LSTMs, sequence modeling, embeddings, temperature sampling, overfitting on small data", hard: false },
+      { name: "Transformer from Scratch", what: "Implement multi-head self-attention, positional encoding, encoder block, decoder block in PyTorch. Train a small translation model.", learns: "Attention mechanism, transformer architecture, masking, the paper that started everything", hard: true },
+    ],
+  },
+  {
+    phase: "LLMs & Training",
+    color: "#ea580c",
+    desc: "Train and fine-tune your own models. 4–6 weeks.",
+    items: [
+      { name: "Train a Baby GPT", what: "Train a small GPT-2 style model (10-50M params) from scratch on a text corpus — Shakespeare, code, or Wikipedia subset. Generate coherent text.", learns: "Causal language modeling, tokenizer training (BPE), pretraining, loss curves, GPU training, checkpointing", hard: true },
+      { name: "Fine-tune BERT for Classification", what: "Fine-tune DistilBERT on a sentiment dataset using Hugging Face Trainer. Add proper eval, confusion matrix, save and reload model.", learns: "Hugging Face ecosystem, tokenizers, Trainer API, fine-tuning workflow, model hub", hard: false },
+      { name: "LoRA Fine-tune an LLM", what: "Take Llama-3-8B or Qwen-2.5-7B → create your own instruction dataset (50-200 examples) → LoRA fine-tune with 4-bit quantization → compare before/after.", learns: "PEFT, LoRA/QLoRA, bitsandbytes, dataset formatting, chat templates, GPU memory management, evaluation", hard: true },
+      { name: "DPO Alignment", what: "Create preference pairs (chosen vs rejected responses) → run DPO on a small model → measure if it actually got better at following instructions.", learns: "RLHF concepts, DPO, preference data curation, alignment, TRL library", hard: true },
+      { name: "Distributed Training Run", what: "Take any training script and make it run on multiple GPUs using PyTorch DDP or FSDP. Benchmark speedup vs single GPU.", learns: "Distributed training, gradient accumulation, DeepSpeed, multi-GPU coordination", hard: true },
+    ],
+  },
+  {
+    phase: "AI Engineering",
+    color: "#0d9488",
+    desc: "Build real products with LLMs. 4–5 weeks.",
+    items: [
+      { name: "RAG Chatbot", what: "Build a chatbot that answers questions about your own PDFs/docs. Chunk documents → embed → store in ChromaDB → retrieve → generate. Add source citations.", learns: "Embeddings, vector databases, chunking strategies, retrieval, prompt engineering, RAG pipeline", hard: false },
+      { name: "AI Agent with Tools", what: "Build an agent that can: search the web, run Python code, read/write files, query a database. Use the ReAct pattern. No LangChain — raw API calls first.", learns: "Function calling, tool use, agent loops, ReAct pattern, error handling, when to stop", hard: true },
+      { name: "Rebuild Agent with LangChain", what: "Rebuild the same agent using LangChain and LangGraph. Compare: what's easier, what's harder, what's hidden from you.", learns: "LangChain, LangGraph, framework tradeoffs, abstraction costs, when frameworks help vs hurt", hard: false },
+      { name: "Code Review Bot", what: "Connects to GitHub → fetches PR diffs → analyzes code quality → posts review comments. Handle large diffs, multi-file changes, rate limits.", learns: "API integration, prompt engineering for code, handling long context, real-world tool building", hard: true },
+      { name: "Eval Framework", what: "Build a testing harness: define test cases → run multiple prompts/models → score outputs (LLM-as-judge + heuristics) → generate comparison report.", learns: "LLM evaluation, automated testing, LLM-as-judge, regression testing, metrics design", hard: true },
+      { name: "Multi-Agent System", what: "Build a research pipeline: Researcher agent finds info → Writer agent drafts → Editor agent reviews. Agents communicate and iterate.", learns: "Multi-agent orchestration, agent communication, task decomposition, quality control loops", hard: true },
+    ],
+  },
+  {
+    phase: "Deploy & Ship",
+    color: "#4f46e5",
+    desc: "Put models in production. 2–3 weeks.",
+    items: [
+      { name: "Model API Service", what: "Serve your fine-tuned model behind FastAPI + Docker. Add streaming responses, rate limiting, API keys, request logging.", learns: "FastAPI, Docker, model serving, streaming, API design, containerization", hard: false },
+      { name: "vLLM / TGI Deployment", what: "Deploy a 7B model using vLLM. Benchmark throughput (tokens/sec), test concurrent users, add request batching.", learns: "Production model serving, vLLM, batching, throughput optimization, GPU utilization", hard: true },
+      { name: "Smart Router", what: "Build a system that classifies queries by difficulty → routes easy ones to a small model and hard ones to a large model. Measure cost savings.", learns: "Model routing, cost optimization, classification, production architecture decisions", hard: true },
+      { name: "Full-Stack AI App", what: "End-to-end product: React frontend → FastAPI backend → RAG + agent → deployed on cloud with monitoring. Something you'd actually show people.", learns: "Everything above, combined. System design, full-stack, shipping a real product.", hard: true },
+    ],
+  },
+  {
+    phase: "Boss Level",
+    color: "#b91c1c",
+    desc: "Pick 1–2. These prove you can do it for real.",
+    items: [
+      { name: "Train a Domain-Specific LLM", what: "Collect a large domain corpus → train a tokenizer → pretrain a small model → fine-tune for domain tasks → evaluate against general models.", learns: "End-to-end model building: data → tokenizer → pretraining → fine-tuning → eval", hard: true },
+      { name: "Open Source Tool", what: "Build and ship an open source AI tool that others actually use. Could be a CLI, library, or app. Write docs, handle issues, iterate on feedback.", learns: "Building for others, software engineering, open source, real-world feedback, documentation", hard: true },
+      { name: "Research Replication", what: "Pick a recent ML paper, reimplement it from scratch, reproduce their results, write a blog post explaining what you learned.", learns: "Reading papers, research engineering, debugging complex systems, technical writing", hard: true },
+    ],
+  },
+];
+
+let completed = JSON.parse(localStorage.getItem("completed") || "{}");
+
+function render() {
+  const container = document.getElementById("phases");
+  container.innerHTML = "";
+
+  let total = 0;
+  let done = 0;
+
+  projects.forEach((phase, pi) => {
+    const div = document.createElement("div");
+    div.className = "phase";
+
+    let html = `
+      <div class="phase-header">
+        <span class="phase-tag" style="background:${phase.color}">${phase.phase}</span>
+        <span class="phase-desc">${phase.desc}</span>
+      </div>
+    `;
+
+    phase.items.forEach((proj, i) => {
+      const key = `${pi}-${i}`;
+      const isDone = completed[key];
+      total++;
+      if (isDone) done++;
+
+      html += `
+        <div class="project" id="proj-${key}">
+          <button class="project-btn" onclick="toggleProject('${key}')">
+            <span class="dot" style="background:${proj.hard ? phase.color : phase.color + '55'}"></span>
+            <span class="project-name" style="${isDone ? 'text-decoration:line-through;opacity:0.5' : ''}">${proj.name}</span>
+            ${proj.hard ? `<span class="hard-tag" style="color:${phase.color};background:${phase.color}20">HARD</span>` : ''}
+            <span class="arrow">›</span>
+          </button>
+          <div class="project-body">
+            <div class="project-what">${proj.what}</div>
+            <div class="project-learns"><strong>You'll learn: </strong>${proj.learns}</div>
+            <button onclick="toggleComplete('${key}')" style="
+              margin-top: 12px;
+              padding: 6px 14px;
+              border: 1px solid ${isDone ? '#2a2a3a' : phase.color + '55'};
+              border-radius: 6px;
+              background: ${isDone ? '#1a1a28' : phase.color + '15'};
+              color: ${isDone ? '#6b6b80' : phase.color};
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+              font-family: inherit;
+            ">${isDone ? '✓ Completed — undo' : 'Mark complete'}</button>
+          </div>
+        </div>
+      `;
+    });
+
+    div.innerHTML = html;
+    container.appendChild(div);
+  });
+
+  const pct = total > 0 ? (done / total) * 100 : 0;
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("progress-text").textContent = `${done} / ${total} completed`;
+}
+
+function toggleProject(key) {
+  const el = document.getElementById("proj-" + key);
+  el.classList.toggle("open");
+}
+
+function toggleComplete(key) {
+  if (completed[key]) {
+    delete completed[key];
+  } else {
+    completed[key] = true;
+  }
+  localStorage.setItem("completed", JSON.stringify(completed));
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
